@@ -1,27 +1,21 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import os
 import streamlit.components.v1 as components
 
-# --- Excel Path ---
-DATA_FILE = "Top_Players.xlsx"
+# --- Google Sheet URL ---
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1_3ewLYmE8RAgIuOuVwaC4cBYIr7Qxygg/export?format=xlsx"
 
-# --- Load Excel ---
+# --- Load data from Google Sheet ---
 def load_player_data():
-    if not os.path.exists(DATA_FILE):
-        sample_data = pd.DataFrame({
-            "Name": ["Player1", "Player2", "Player3", "Player4", "Player5"],
-            "War_Attempts": [10, 10, 10, 9, 8],
-            "War_Stars": [25, 18, 30, 20, 15],
-            "CWL_Attempts": [5, 5, 5, 5, 4],
-            "CWL_Stars": [15, 20, 18, 12, 10],
-            "ClanCapital_Gold": [120000, 95000, 150000, 90000, 70000],
-            "ClanGames_Points": [3000, 2500, 4000, 2000, 1500],
-            "RushEvents_Participation_pct": [100, 80, 90, 70, 60]
-        })
-        sample_data.to_excel(DATA_FILE, index=False)
-    return pd.read_excel(DATA_FILE).fillna(0)
+    try:
+        df = pd.read_excel(SHEET_URL)
+    except Exception as e:
+        st.error(f"Failed to load data from Google Sheet: {e}")
+        df = pd.DataFrame(columns=["Name","War_Attempts","War_Stars","CWL_Attempts",
+                                   "CWL_Stars","ClanCapital_Gold","ClanGames_Points",
+                                   "RushEvents_Participation_pct"])
+    return df.fillna(0)
 
 # --- Compute Scores ---
 def compute_scores(df):
@@ -52,7 +46,6 @@ def compute_scores(df):
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="ClashIntel ⚔️", layout="wide")
-
 st.title("🏆 Top Clan Players Leaderboard")
 if st.button("🔄 Refresh Data"):
     st.experimental_rerun()
@@ -129,5 +122,5 @@ for _, row in df.iterrows():
 
 html += "</div>"
 
-# --- Render HTML in Streamlit ---
+# --- Render HTML ---
 components.html(html, height=8000, scrolling=True)
