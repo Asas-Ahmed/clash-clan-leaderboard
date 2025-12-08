@@ -116,7 +116,10 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 }
 
 .attack { background: linear-gradient(90deg, #FF4500, #FF6347); }
-.gold { background: linear-gradient(90deg, #FFD700, #FFEA70); }
+.gold {
+    background: linear-gradient(90deg, #FFD700, #FFEA70);
+    color: #000 !important;   /* Make text black */
+}
 .games { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
 .events { background: linear-gradient(90deg, #32CD32, #7CFC00); }
 
