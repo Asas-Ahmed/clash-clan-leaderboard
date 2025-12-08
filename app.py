@@ -54,9 +54,6 @@ def compute_scores(df):
 st.set_page_config(page_title="ClashIntel ⚔️", layout="wide")
 st.title("🏆 Top Clan Players Leaderboard")
 
-if st.button("🔄 Refresh Data"):
-    st.experimental_rerun()
-
 df = compute_scores(load_player_data())
 
 # --- HTML + CSS ---
