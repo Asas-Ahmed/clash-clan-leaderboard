@@ -9,4 +9,4 @@ A modern, interactive Clash of Clans clan leaderboard built with Streamlit.
 - Highlights top 3 players with rank badges.
 
 ## How to Run
-1. Clone the repo:
+https://coc-area51.streamlit.app/
