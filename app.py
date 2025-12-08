@@ -6,7 +6,7 @@ import streamlit.components.v1 as components
 # --- Google Sheet URL ---
 SHEET_URL = "https://docs.google.com/spreadsheets/d/118gjjn-oFYt4-hy8HVxius8LzeMA6V0SGVI_Mto5Heg/export?format=xlsx"
 
-# --- Load data from Google Sheet ---
+# --- Load data ---
 def load_player_data():
     try:
         df = pd.read_excel(SHEET_URL)
@@ -17,10 +17,11 @@ def load_player_data():
                                    "RushEvents_Participation_pct"])
     return df.fillna(0)
 
-# --- Compute Scores ---
+# --- Compute scores ---
 def compute_scores(df):
-    for col in ["War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
-                "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"]:
+    num_cols = ["War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
+                "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"]
+    for col in num_cols:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
     MAX_WAR, MAX_CWL = 10, 7
@@ -28,13 +29,14 @@ def compute_scores(df):
     df["CWL_Efficiency"] = df["CWL_Stars"] / df["CWL_Attempts"].replace(0,1) / 3
 
     k = 8
-    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["War_Attempts"] / MAX_WAR) - 0.5)))
-    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["CWL_Attempts"] / MAX_CWL) - 0.5)))
+    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k*((df["War_Attempts"]/MAX_WAR)-0.5)))
+    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k*((df["CWL_Attempts"]/MAX_CWL)-0.5)))
 
     df["Fair_War_Score"] = df["War_Efficiency"] * df["War_Participation_Factor"]
     df["Fair_CWL_Score"] = df["CWL_Efficiency"] * df["CWL_Participation_Factor"]
 
-    df["Attack_Success_pct"] = ((df["Fair_War_Score"] * 0.6 + df["Fair_CWL_Score"] * 0.4) * 100).round(2)
+    df["Attack_Success_pct"] = ((df["Fair_War_Score"] * 0.6 + df["Fair_CWL_Score"] * 0.4) * 100)
+
     df["Gold_Scaled"] = df["ClanCapital_Gold"] / df["ClanCapital_Gold"].max()
     df["Games_Scaled"] = df["ClanGames_Points"] / df["ClanGames_Points"].max()
     df["Events_Scaled"] = df["RushEvents_Participation_pct"] / 100
@@ -47,10 +49,9 @@ def compute_scores(df):
     ).round(2)
 
     df["Rank"] = df["FinalScore"].rank(ascending=False, method="min").astype(int)
-
     return df.sort_values("FinalScore", ascending=False).reset_index(drop=True)
 
-# --- Streamlit UI ---
+# --- UI ---
 st.set_page_config(page_title="ClashIntel ⚔️", layout="wide")
 st.title("🏆 Top Clan Players Leaderboard")
 
@@ -71,30 +72,15 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 }
 .player-row:hover { transform: scale(1.02); box-shadow: 0 0 25px #00FFFF; }
 
+/* Rank badges */
 .rank-badge {
     width: 50px; height: 50px; border-radius: 50%;
     display: flex; justify-content: center; align-items: center;
     font-weight: bold; margin-right: 15px; flex-shrink: 0;
 }
-
-/* 🥇 Rank 1 – GOLD */
-.rank-badge.gold {
-    background: linear-gradient(135deg, #FFD700, #FFB700);
-    color: #000;
-    box-shadow: 0 0 12px #FFD700;
-}
-
-/* 🥈 Rank 2 – SILVER */
-.rank-badge.silver {
-    background: #C0C0C0;
-    color: #000;
-}
-
-/* 🥉 Rank 3 – BRONZE */
-.rank-badge.bronze {
-    background: #CD7F32;
-    color: #fff;
-}
+.rank-badge.gold    { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; box-shadow:0 0 12px #FFD700; }
+.rank-badge.silver  { background:#C0C0C0; color:#000; }
+.rank-badge.bronze  { background:#CD7F32; color:#fff; }
 
 .player-name { font-size: 20px; font-weight: bold; color: #00FFFF; flex: 1; min-width:150px; }
 
@@ -113,44 +99,62 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 }
 
 .attack { background: linear-gradient(90deg, #FF4500, #FF6347); }
-.gold {
-    background: linear-gradient(90deg, #FFD700, #FFEA70);
-    color: #000 !important;
-}
-.games { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
+.gold   { background: linear-gradient(90deg, #FFD700, #FFEA70); color:#000 !important; }
+.games  { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
 .events { background: linear-gradient(90deg, #32CD32, #7CFC00); }
 
-/* 🔥 NEW Animated Final Score Badge */
+/* ✨ DYNAMIC FINAL SCORE COLORS */
 .final-score {
     font-weight: bold;
-    min-width: 110px;
+    min-width: 120px;
     text-align: center;
     font-size: 22px;
     padding: 10px 15px;
-    border-radius: 10px;
-
-    background: linear-gradient(135deg, #00eaff, #0066ff);
-    color: #ffffff;
-    border: 2px solid rgba(0,255,255,0.4);
-
-    box-shadow: 0 0 15px rgba(0,200,255,0.8), 0 0 30px rgba(0,100,255,0.6);
-
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.25);
     animation: pulseGlow 2s infinite alternate ease-in-out;
-    transition: transform 0.2s ease;
+    transition: 0.2s;
 }
 
+/* Hover effect */
 .final-score:hover {
-    transform: scale(1.07);
-    box-shadow: 0 0 25px rgba(0,255,255,1), 0 0 40px rgba(0,120,255,0.9);
+    transform: scale(1.08);
+}
+
+/* Color tiers */
+.score-gold {
+    background: linear-gradient(135deg, #FFD700, #FFB700);
+    color: #000;
+    box-shadow: 0 0 25px rgba(255,215,0,0.8);
+}
+
+.score-purple {
+    background: linear-gradient(135deg, #A020F0, #C060FF);
+    color: #fff;
+    box-shadow: 0 0 25px rgba(180,0,255,0.8);
+}
+
+.score-blue {
+    background: linear-gradient(135deg, #0080FF, #00C0FF);
+    color: #fff;
+    box-shadow: 0 0 25px rgba(0,160,255,0.8);
+}
+
+.score-green {
+    background: linear-gradient(135deg, #32CD32, #7CFC00);
+    color: #003000;
+    box-shadow: 0 0 25px rgba(0,255,100,0.7);
+}
+
+.score-red {
+    background: linear-gradient(135deg, #FF3B3B, #FF7070);
+    color: #fff;
+    box-shadow: 0 0 25px rgba(255,60,60,0.8);
 }
 
 @keyframes pulseGlow {
-    0% {
-        box-shadow: 0 0 10px rgba(0,200,255,0.7), 0 0 20px rgba(0,100,255,0.5);
-    }
-    100% {
-        box-shadow: 0 0 25px rgba(0,255,255,1), 0 0 50px rgba(0,120,255,1);
-    }
+    0%   { box-shadow: 0 0 10px rgba(0,255,255,0.3); }
+    100% { box-shadow: 0 0 25px rgba(0,255,255,0.7); }
 }
 
 @media screen and (max-width:800px){
@@ -162,10 +166,10 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 <div class="leaderboard">
 """
 
-# --- Add player rows ---
+# --- Add player rows with dynamic score color ---
 for _, row in df.iterrows():
 
-    # Badge color logic
+    # Badge colors
     if row["Rank"] == 1:
         badge_class = "rank-badge gold"
     elif row["Rank"] == 2:
@@ -174,6 +178,19 @@ for _, row in df.iterrows():
         badge_class = "rank-badge bronze"
     else:
         badge_class = "rank-badge"
+
+    # Dynamic Final Score color
+    score = row["FinalScore"]
+    if score >= 90:
+        score_class = "score-gold"
+    elif score >= 75:
+        score_class = "score-purple"
+    elif score >= 60:
+        score_class = "score-blue"
+    elif score >= 40:
+        score_class = "score-green"
+    else:
+        score_class = "score-red"
 
     html += f"""
     <div class="player-row">
@@ -225,11 +242,10 @@ for _, row in df.iterrows():
             </div>
         </div>
 
-        <div class="final-score">⭐ {row['FinalScore']:.2f}</div>
+        <div class="final-score {score_class}">⭐ {row['FinalScore']:.2f}</div>
     </div>
     """
 
 html += "</div>"
 
-# --- Render HTML ---
-components.html(html, height=8000, scrolling=True)
+components.html(html, height=9000, scrolling=True)
