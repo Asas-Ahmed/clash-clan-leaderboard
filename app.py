@@ -29,7 +29,7 @@ def compute_scores(df):
 
     k = 8
     df["War_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["War_Attempts"]/MAX_WAR)-0.5)))
-    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["CWL_Attempts"]/MAX_CWL)-0.5)))
+    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["CWL_Attempts']/MAX_CWL)-0.5)))
 
     df["Fair_War_Score"] = df["War_Efficiency"] * df["War_Participation_Factor"]
     df["Fair_CWL_Score"] = df["CWL_Efficiency"] * df["CWL_Participation_Factor"]
@@ -56,32 +56,95 @@ df = compute_scores(load_player_data())
 html = """
 <style>
 body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
-.leaderboard { display: flex; flex-direction: column; gap: 15px; width: 90%; margin: 0 auto; }
-.player-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-radius: 15px; background: rgba(0,0,0,0.6); box-shadow: 0 0 15px rgba(0,255,255,0.3); flex-wrap: wrap; transition: 0.3s; }
+
+.leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-radius: 15px;
+    background: rgba(0,0,0,0.6);
+    box-shadow: 0 0 15px rgba(0,255,255,0.3);
+    flex-wrap: wrap;
+    transition: 0.3s;
+}
 .player-row:hover { transform: scale(1.02); box-shadow: 0 0 25px #00FFFF; }
-.rank-badge { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #000; background: #00FFFF; margin-right: 15px; flex-shrink: 0; }
-.rank-badge.silver { background: #C0C0C0; color: #000; }
-.rank-badge.bronze { background: #CD7F32; color: #fff; }
+
+.rank-badge {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: #000;
+    background: #00FFFF;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+/* NEW BADGE COLORS */
+.rank-badge.gold {
+    background: linear-gradient(135deg, #FFD700, #FFB700);
+    color: #000;
+    box-shadow: 0 0 12px #FFD700;
+}
+.rank-badge.silver {
+    background: #C0C0C0;
+    color: #000;
+}
+.rank-badge.bronze {
+    background: #CD7F32;
+    color: #fff;
+}
+
 .player-name { font-size: 20px; font-weight: bold; color: #00FFFF; flex: 1; min-width:150px; }
+
 .stats-bar-wrapper { flex: 1; min-width: 150px; margin: 5px 10px; }
 .stats-label { font-size: 12px; margin-bottom: 2px; }
 .stats-bar-container { width: 100%; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; height: 20px; }
-.stats-bar { height: 100%; text-align: center; padding: 0 5px; color: #000; font-weight: bold; line-height: 20px; border-radius: 12px 0 0 12px; overflow: visible; width: var(--bar-width); }
+.stats-bar {
+    height: 100%; text-align: center; padding: 0 5px; color: #000;
+    font-weight: bold; line-height: 20px; border-radius: 12px 0 0 12px;
+    overflow: visible; width: var(--bar-width);
+}
 .attack { background: linear-gradient(90deg, #FF4500, #FF6347); }
 .gold { background: linear-gradient(90deg, #FFD700, #FFEA70); }
 .games { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
 .events { background: linear-gradient(90deg, #32CD32, #7CFC00); }
+
 .final-score { font-weight: bold; min-width:80px; text-align:center; }
-@media screen and (max-width: 800px){ .player-row { flex-direction: column; align-items: flex-start; } .stats-bar-wrapper { width: 100%; margin:5px 0; } }
+
+@media screen and (max-width: 800px){
+    .player-row { flex-direction: column; align-items: flex-start; }
+    .stats-bar-wrapper { width: 100%; margin:5px 0; }
+}
 </style>
+
 <div class="leaderboard">
 """
 
 # --- Add player rows ---
 for _, row in df.iterrows():
-    badge_class = "rank-badge"
-    if row['Rank'] == 2: badge_class = "rank-badge silver"
-    elif row['Rank'] == 3: badge_class = "rank-badge bronze"
+
+    # Assign correct badge color
+    if row['Rank'] == 1:
+        badge_class = "rank-badge gold"
+    elif row['Rank'] == 2:
+        badge_class = "rank-badge silver"
+    elif row['Rank'] == 3:
+        badge_class = "rank-badge bronze"
+    else:
+        badge_class = "rank-badge"
 
     html += f"""
     <div class="player-row">
@@ -91,7 +154,7 @@ for _, row in df.iterrows():
         <div class="stats-bar-wrapper">
             <div class="stats-label">⚔️ War Stars / Attempts</div>
             <div class="stats-bar-container">
-                <div class="stats-bar attack" style="--bar-width:{min((row['War_Stars']/ (row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
+                <div class="stats-bar attack" style="--bar-width:{min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
                     {int(row['War_Stars'])}/{int(row['War_Attempts'])}
                 </div>
             </div>
@@ -100,7 +163,7 @@ for _, row in df.iterrows():
         <div class="stats-bar-wrapper">
             <div class="stats-label">🛡️ CWL Stars / Attempts</div>
             <div class="stats-bar-container">
-                <div class="stats-bar attack" style="--bar-width:{min((row['CWL_Stars']/ (row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%">
+                <div class="stats-bar attack" style="--bar-width:{min((row['CWL_Stars']/(row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%">
                     {int(row['CWL_Stars'])}/{int(row['CWL_Attempts'])}
                 </div>
             </div>
