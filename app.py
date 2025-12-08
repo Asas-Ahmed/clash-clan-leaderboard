@@ -77,7 +77,7 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 <div class="leaderboard">
 """
 
-# --- Add player rows with War/CWL Stars & Attempts ---
+# --- Add player rows ---
 for _, row in df.iterrows():
     badge_class = "rank-badge"
     if row['Rank'] == 2: badge_class = "rank-badge silver"
@@ -109,21 +109,27 @@ for _, row in df.iterrows():
         <div class="stats-bar-wrapper">
             <div class="stats-label">💰 Capital Gold</div>
             <div class="stats-bar-container">
-                <div class="stats-bar gold" style="--bar-width:{min(row['Gold_Scaled']*100,100)}%">{row['Gold_Scaled']*100:.0f}%</div>
+                <div class="stats-bar gold" style="--bar-width:{min(row['Gold_Scaled']*100,100)}%">
+                    {int(row['ClanCapital_Gold']):,}
+                </div>
             </div>
         </div>
 
         <div class="stats-bar-wrapper">
             <div class="stats-label">🎮 Clan Games</div>
             <div class="stats-bar-container">
-                <div class="stats-bar games" style="--bar-width:{min(row['Games_Scaled']*100,100)}%">{row['Games_Scaled']*100:.0f}%</div>
+                <div class="stats-bar games" style="--bar-width:{min(row['Games_Scaled']*100,100)}%">
+                    {int(row['ClanGames_Points']):,}
+                </div>
             </div>
         </div>
 
         <div class="stats-bar-wrapper">
             <div class="stats-label">🎯 Events</div>
             <div class="stats-bar-container">
-                <div class="stats-bar events" style="--bar-width:{min(row['Events_Scaled']*100,100)}%">{row['Events_Scaled']*100:.0f}%</div>
+                <div class="stats-bar events" style="--bar-width:{min(row['Events_Scaled']*100,100)}%">
+                    {row['Events_Scaled']*100:.0f}%
+                </div>
             </div>
         </div>
 
