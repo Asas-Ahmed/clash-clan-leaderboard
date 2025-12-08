@@ -1,2 +1,12 @@
-# clash-clan-leaderboard
-A modern, interactive Clash of Clans clan leaderboard built with Streamlit. Displays top players with attack efficiency, clan gold, clan games, and events stats using animated progress bars.
+# Clash Clan Leaderboard
+
+A modern, interactive Clash of Clans clan leaderboard built with Streamlit.  
+
+## Features
+- Shows top clan players ranked by attack, gold, games, and events.
+- Animated progress bars for stats.
+- Responsive design for mobile and desktop.
+- Highlights top 3 players with rank badges.
+
+## How to Run
+1. Clone the repo:
