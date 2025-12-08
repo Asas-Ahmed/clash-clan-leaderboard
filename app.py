@@ -4,7 +4,7 @@ import numpy as np
 import streamlit.components.v1 as components
 
 # --- Google Sheet URL ---
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1_3ewLYmE8RAgIuOuVwaC4cBYIr7Qxygg/edit?usp=sharing&ouid=101731607309669827457&rtpof=true&sd=true"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1_3ewLYmE8RAgIuOuVwaC4cBYIr7Qxygg/export?format=xlsx"
 
 # --- Load data from Google Sheet ---
 def load_player_data():
