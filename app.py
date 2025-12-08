@@ -28,18 +28,24 @@ def compute_scores(df):
     df["CWL_Efficiency"] = df["CWL_Stars"] / df["CWL_Attempts"].replace(0,1) / 3
 
     k = 8
-    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["War_Attempts"]/MAX_WAR)-0.5)))
-    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["CWL_Attempts']/MAX_CWL)-0.5)))
+    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["War_Attempts"] / MAX_WAR) - 0.5)))
+    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["CWL_Attempts"] / MAX_CWL) - 0.5)))
 
     df["Fair_War_Score"] = df["War_Efficiency"] * df["War_Participation_Factor"]
     df["Fair_CWL_Score"] = df["CWL_Efficiency"] * df["CWL_Participation_Factor"]
 
-    df["Attack_Success_pct"] = ((df["Fair_War_Score"]*0.6 + df["Fair_CWL_Score"]*0.4)*100).round(2)
-    df["Gold_Scaled"] = df["ClanCapital_Gold"]/df["ClanCapital_Gold"].max()
-    df["Games_Scaled"] = df["ClanGames_Points"]/df["ClanGames_Points"].max()
-    df["Events_Scaled"] = df["RushEvents_Participation_pct"]/100
+    df["Attack_Success_pct"] = ((df["Fair_War_Score"] * 0.6 + df["Fair_CWL_Score"] * 0.4) * 100).round(2)
+    df["Gold_Scaled"] = df["ClanCapital_Gold"] / df["ClanCapital_Gold"].max()
+    df["Games_Scaled"] = df["ClanGames_Points"] / df["ClanGames_Points"].max()
+    df["Events_Scaled"] = df["RushEvents_Participation_pct"] / 100
 
-    df["FinalScore"] = (df["Attack_Success_pct"]*0.35 + df["Gold_Scaled"]*25 + df["Games_Scaled"]*20 + df["Events_Scaled"]*20).round(2)
+    df["FinalScore"] = (
+        df["Attack_Success_pct"] * 0.35 +
+        df["Gold_Scaled"] * 25 +
+        df["Games_Scaled"] * 20 +
+        df["Events_Scaled"] * 20
+    ).round(2)
+
     df["Rank"] = df["FinalScore"].rank(ascending=False, method="min").astype(int)
 
     return df.sort_values("FinalScore", ascending=False).reset_index(drop=True)
@@ -47,6 +53,7 @@ def compute_scores(df):
 # --- Streamlit UI ---
 st.set_page_config(page_title="ClashIntel ⚔️", layout="wide")
 st.title("🏆 Top Clan Players Leaderboard")
+
 if st.button("🔄 Refresh Data"):
     st.experimental_rerun()
 
@@ -57,51 +64,36 @@ html = """
 <style>
 body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 
-.leaderboard {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 90%;
-    margin: 0 auto;
-}
+.leaderboard { display: flex; flex-direction: column; gap: 15px; width: 90%; margin: 0 auto; }
 
 .player-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px;
-    border-radius: 15px;
-    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 20px; border-radius: 15px; background: rgba(0,0,0,0.6);
     box-shadow: 0 0 15px rgba(0,255,255,0.3);
-    flex-wrap: wrap;
-    transition: 0.3s;
+    flex-wrap: wrap; transition: 0.3s;
 }
 .player-row:hover { transform: scale(1.02); box-shadow: 0 0 25px #00FFFF; }
 
 .rank-badge {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    color: #000;
-    background: #00FFFF;
-    margin-right: 15px;
-    flex-shrink: 0;
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-weight: bold; margin-right: 15px; flex-shrink: 0;
 }
 
-/* NEW BADGE COLORS */
+/* 🥇 Rank 1 – GOLD */
 .rank-badge.gold {
     background: linear-gradient(135deg, #FFD700, #FFB700);
     color: #000;
     box-shadow: 0 0 12px #FFD700;
 }
+
+/* 🥈 Rank 2 – SILVER */
 .rank-badge.silver {
     background: #C0C0C0;
     color: #000;
 }
+
+/* 🥉 Rank 3 – BRONZE */
 .rank-badge.bronze {
     background: #CD7F32;
     color: #fff;
@@ -111,12 +103,18 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 
 .stats-bar-wrapper { flex: 1; min-width: 150px; margin: 5px 10px; }
 .stats-label { font-size: 12px; margin-bottom: 2px; }
-.stats-bar-container { width: 100%; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; height: 20px; }
-.stats-bar {
-    height: 100%; text-align: center; padding: 0 5px; color: #000;
-    font-weight: bold; line-height: 20px; border-radius: 12px 0 0 12px;
-    overflow: visible; width: var(--bar-width);
+
+.stats-bar-container {
+    width: 100%; background: rgba(255,255,255,0.1);
+    border-radius: 12px; overflow: hidden; height: 20px;
 }
+
+.stats-bar {
+    height: 100%; text-align: center; padding: 0 5px;
+    font-weight: bold; line-height: 20px; border-radius: 12px 0 0 12px;
+    width: var(--bar-width);
+}
+
 .attack { background: linear-gradient(90deg, #FF4500, #FF6347); }
 .gold { background: linear-gradient(90deg, #FFD700, #FFEA70); }
 .games { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
@@ -124,7 +122,7 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 
 .final-score { font-weight: bold; min-width:80px; text-align:center; }
 
-@media screen and (max-width: 800px){
+@media screen and (max-width:800px){
     .player-row { flex-direction: column; align-items: flex-start; }
     .stats-bar-wrapper { width: 100%; margin:5px 0; }
 }
@@ -136,12 +134,12 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 # --- Add player rows ---
 for _, row in df.iterrows():
 
-    # Assign correct badge color
-    if row['Rank'] == 1:
+    # Badge color logic
+    if row["Rank"] == 1:
         badge_class = "rank-badge gold"
-    elif row['Rank'] == 2:
+    elif row["Rank"] == 2:
         badge_class = "rank-badge silver"
-    elif row['Rank'] == 3:
+    elif row["Rank"] == 3:
         badge_class = "rank-badge bronze"
     else:
         badge_class = "rank-badge"
