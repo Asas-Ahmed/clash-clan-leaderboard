@@ -77,7 +77,7 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 <div class="leaderboard">
 """
 
-# --- Add player rows ---
+# --- Add player rows with War/CWL Stars & Attempts ---
 for _, row in df.iterrows():
     badge_class = "rank-badge"
     if row['Rank'] == 2: badge_class = "rank-badge silver"
@@ -89,21 +89,32 @@ for _, row in df.iterrows():
         <div class="player-name">{row['Name']}</div>
 
         <div class="stats-bar-wrapper">
-            <div class="stats-label">⚔️ Attack</div>
+            <div class="stats-label">⚔️ War Stars / Attempts</div>
             <div class="stats-bar-container">
-                <div class="stats-bar attack" style="--bar-width:{min(row['Attack_Success_pct'],100)}%">{row['Attack_Success_pct']}%</div>
+                <div class="stats-bar attack" style="--bar-width:{min((row['War_Stars']/ (row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
+                    {int(row['War_Stars'])}/{int(row['War_Attempts'])}
+                </div>
             </div>
         </div>
 
         <div class="stats-bar-wrapper">
-            <div class="stats-label">💰 Gold</div>
+            <div class="stats-label">🛡️ CWL Stars / Attempts</div>
+            <div class="stats-bar-container">
+                <div class="stats-bar attack" style="--bar-width:{min((row['CWL_Stars']/ (row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%">
+                    {int(row['CWL_Stars'])}/{int(row['CWL_Attempts'])}
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar-wrapper">
+            <div class="stats-label">💰 Capital Gold</div>
             <div class="stats-bar-container">
                 <div class="stats-bar gold" style="--bar-width:{min(row['Gold_Scaled']*100,100)}%">{row['Gold_Scaled']*100:.0f}%</div>
             </div>
         </div>
 
         <div class="stats-bar-wrapper">
-            <div class="stats-label">🎮 Games</div>
+            <div class="stats-label">🎮 Clan Games</div>
             <div class="stats-bar-container">
                 <div class="stats-bar games" style="--bar-width:{min(row['Games_Scaled']*100,100)}%">{row['Games_Scaled']*100:.0f}%</div>
             </div>
