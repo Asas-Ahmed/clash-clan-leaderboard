@@ -115,12 +115,43 @@ body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
 .attack { background: linear-gradient(90deg, #FF4500, #FF6347); }
 .gold {
     background: linear-gradient(90deg, #FFD700, #FFEA70);
-    color: #000 !important;   /* Make text black */
+    color: #000 !important;
 }
 .games { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
 .events { background: linear-gradient(90deg, #32CD32, #7CFC00); }
 
-.final-score { font-weight: bold; min-width:80px; text-align:center; }
+/* 🔥 NEW Animated Final Score Badge */
+.final-score {
+    font-weight: bold;
+    min-width: 110px;
+    text-align: center;
+    font-size: 22px;
+    padding: 10px 15px;
+    border-radius: 10px;
+
+    background: linear-gradient(135deg, #00eaff, #0066ff);
+    color: #ffffff;
+    border: 2px solid rgba(0,255,255,0.4);
+
+    box-shadow: 0 0 15px rgba(0,200,255,0.8), 0 0 30px rgba(0,100,255,0.6);
+
+    animation: pulseGlow 2s infinite alternate ease-in-out;
+    transition: transform 0.2s ease;
+}
+
+.final-score:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 25px rgba(0,255,255,1), 0 0 40px rgba(0,120,255,0.9);
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 10px rgba(0,200,255,0.7), 0 0 20px rgba(0,100,255,0.5);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(0,255,255,1), 0 0 50px rgba(0,120,255,1);
+    }
+}
 
 @media screen and (max-width:800px){
     .player-row { flex-direction: column; align-items: flex-start; }
@@ -194,7 +225,7 @@ for _, row in df.iterrows():
             </div>
         </div>
 
-        <div class="final-score">{row['FinalScore']:.2f}</div>
+        <div class="final-score">⭐ {row['FinalScore']:.2f}</div>
     </div>
     """
 
