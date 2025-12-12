@@ -48,7 +48,11 @@ def compute_scores(df):
         df["Events_Scaled"] * 20
     ).round(2)
 
+    # Clean all NaN/inf before ranking
+    df = df.replace([np.inf, -np.inf], np.nan).fillna(0)
+
     df["Rank"] = df["FinalScore"].rank(ascending=False, method="min").astype(int)
+
     return df.sort_values("FinalScore", ascending=False).reset_index(drop=True)
 
 # --- UI ---
