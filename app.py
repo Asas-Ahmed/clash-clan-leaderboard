@@ -19,34 +19,39 @@ def load_player_data():
 
 # --- Compute scores ---
 def compute_scores(df):
-    num_cols = ["War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
-                "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"]
-    for col in num_cols:
+    for col in ["War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
+                "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
     MAX_WAR, MAX_CWL = 10, 7
-    df["War_Efficiency"] = df["War_Stars"] / df["War_Attempts"].replace(0,1) / 3
-    df["CWL_Efficiency"] = df["CWL_Stars"] / df["CWL_Attempts"].replace(0,1) / 3
+
+    # Safe divisions
+    df["War_Efficiency"] = df["War_Stars"] / df["War_Attempts"].replace(0, 1) / 3
+    df["CWL_Efficiency"] = df["CWL_Stars"] / df["CWL_Attempts"].replace(0, 1) / 3
 
     k = 8
-    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k*((df["War_Attempts"]/MAX_WAR)-0.5)))
-    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k*((df["CWL_Attempts"]/MAX_CWL)-0.5)))
+    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["War_Attempts"]/MAX_WAR)-0.5)))
+    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k * ((df["CWL_Attempts"]/MAX_CWL)-0.5)))
 
     df["Fair_War_Score"] = df["War_Efficiency"] * df["War_Participation_Factor"]
     df["Fair_CWL_Score"] = df["CWL_Efficiency"] * df["CWL_Participation_Factor"]
 
-    df["Attack_Success_pct"] = ((df["Fair_War_Score"] * 0.6 + df["Fair_CWL_Score"] * 0.4) * 100)
+    df["Attack_Success_pct"] = ((df["Fair_War_Score"]*0.6 + df["Fair_CWL_Score"]*0.4)*100)
 
-    df["Gold_Scaled"] = df["ClanCapital_Gold"] / df["ClanCapital_Gold"].max()
-    df["Games_Scaled"] = df["ClanGames_Points"] / df["ClanGames_Points"].max()
+    # Avoid division by zero on scaling
+    gold_max = df["ClanCapital_Gold"].max() or 1
+    games_max = df["ClanGames_Points"].max() or 1
+
+    df["Gold_Scaled"] = df["ClanCapital_Gold"] / gold_max
+    df["Games_Scaled"] = df["ClanGames_Points"] / games_max
     df["Events_Scaled"] = df["RushEvents_Participation_pct"] / 100
 
     df["FinalScore"] = (
-        df["Attack_Success_pct"] * 0.35 +
-        df["Gold_Scaled"] * 25 +
-        df["Games_Scaled"] * 20 +
-        df["Events_Scaled"] * 20
-    ).round(2)
+        df["Attack_Success_pct"]*0.35 +
+        df["Gold_Scaled"]*25 +
+        df["Games_Scaled"]*20 +
+        df["Events_Scaled"]*20
+    )
 
     # Clean all NaN/inf before ranking
     df = df.replace([np.inf, -np.inf], np.nan).fillna(0)
