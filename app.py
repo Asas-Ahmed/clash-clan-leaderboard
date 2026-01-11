@@ -194,6 +194,14 @@ body {
     border-radius: 999px;
 }
 
+.stat-value {
+    float: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: #e8ecf1;
+    opacity: 0.85;
+}
+
 /* Bar Colors (muted, pro) */
 .attack { background: linear-gradient(90deg,#ff6a3d,#ff9a3d); }
 .gold   { background: linear-gradient(90deg,#f5c542,#ffe08a); }
@@ -281,10 +289,13 @@ for _, row in df.iterrows():
         <div class="player-name">{row['Name']}</div>
 
         <div class="stats-bar-wrapper">
-            <div class="stats-label">⚔️ War Stars / Attempts</div>
-            <div class="stats-bar-container">
-                <div class="stats-bar attack" style="--bar-width:{min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
-                    {int(row['War_Stars'])}/{int(row['War_Attempts'])}
+            <div class="stats-label">
+                ⚔️ War
+                <span class="stat-value">{int(row['War_Stars'])}/{int(row['War_Attempts'])}</span>
+            </div>
+            <div class="stats-bar-container" title="{int(row['War_Stars'])}/{int(row['War_Attempts'])}">
+                <div class="stats-bar attack"
+                     style="width:{min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
                 </div>
             </div>
         </div>
