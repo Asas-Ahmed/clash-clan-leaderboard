@@ -102,7 +102,15 @@ html = """
     --text-muted: #9aa4b2;
 }
 
-/* Base */
+/* =====================
+   BASE / GLOBAL
+===================== */
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background: transparent;
@@ -110,22 +118,27 @@ body {
 }
 
 .leaderboard {
-    max-width: 1400px;
+    width: 100%;
+    max-width: min(1400px, 96vw);
     margin: auto;
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding-bottom: 40px;
+    padding-inline: clamp(8px, 2vw, 20px);
 }
 
-/* Player Card */
+/* =====================
+   PLAYER CARD
+===================== */
+
 .player-row {
     display: grid;
-    grid-template-columns: 
-        60px          /* Rank */
-        minmax(180px, 1.4fr)  /* Name */
-        repeat(5, minmax(140px, 1fr)) /* Stats */
-        130px;        /* Final score */
+    grid-template-columns:
+        60px
+        minmax(160px, 1.3fr)
+        repeat(5, minmax(120px, 1fr))
+        120px;
     gap: 12px;
     align-items: center;
     padding: 16px 20px;
@@ -143,11 +156,15 @@ body {
 .player-row:hover {
     transform: translateY(-2px);
     border-color: rgba(94,231,255,0.35);
-    box-shadow: 0 0 0 1px rgba(94,231,255,0.25),
-                0 18px 40px rgba(0,0,0,0.45);
+    box-shadow:
+        0 0 0 1px rgba(94,231,255,0.25),
+        0 18px 40px rgba(0,0,0,0.45);
 }
 
-/* Rank */
+/* =====================
+   RANK
+===================== */
+
 .rank-badge {
     width: 44px;
     height: 44px;
@@ -159,19 +176,25 @@ body {
     color: var(--text-muted);
 }
 
-.rank-badge.gold { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; }
+.rank-badge.gold   { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; }
 .rank-badge.silver { background:#cfd3d6; color:#000; }
 .rank-badge.bronze { background:#c27c3d; color:#fff; }
 
-/* Name */
+/* =====================
+   NAME
+===================== */
+
 .player-name {
-    font-size: 18px;
+    font-size: clamp(15px, 1.3vw, 18px);
     font-weight: 700;
     letter-spacing: 0.3px;
     color: var(--text-main);
 }
 
-/* Stat Blocks */
+/* =====================
+   STATS
+===================== */
+
 .stats-bar-wrapper {
     display: flex;
     flex-direction: column;
@@ -179,7 +202,7 @@ body {
 }
 
 .stats-label {
-    font-size: 11px;
+    font-size: clamp(10px, 0.9vw, 11px);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-muted);
@@ -196,16 +219,10 @@ body {
 
 .stats-bar-container {
     width: 100%;
-    height: 10px;
+    height: clamp(9px, 1vw, 12px);
     background: rgba(255,255,255,0.08);
     border-radius: 999px;
     overflow: hidden;
-}
-
-@media (min-width: 1100px) {
-    .stats-bar-container {
-        height: 12px;
-    }
 }
 
 .stats-bar {
@@ -214,7 +231,6 @@ body {
 }
 
 .stat-value {
-    float: right;
     font-size: 11px;
     font-weight: 600;
     color: #e8ecf1;
@@ -222,17 +238,20 @@ body {
     margin-left: 8px;
 }
 
-/* Bar Colors (muted, pro) */
+/* Bar colors */
 .attack { background: linear-gradient(90deg,#ff6a3d,#ff9a3d); }
 .gold   { background: linear-gradient(90deg,#f5c542,#ffe08a); }
 .games  { background: linear-gradient(90deg,#4facfe,#00f2fe); }
 .events { background: linear-gradient(90deg,#43e97b,#38f9d7); }
 
-/* Final Score */
+/* =====================
+   FINAL SCORE
+===================== */
+
 .final-score {
     text-align: center;
     font-weight: 800;
-    font-size: 20px;
+    font-size: clamp(16px, 1.4vw, 20px);
     padding: 12px 0;
     border-radius: 14px;
     letter-spacing: 0.04em;
@@ -240,36 +259,82 @@ body {
 }
 
 /* Score tiers */
-.score-gold {
-    background: linear-gradient(135deg,#FFD700,#FFB700);
-    color:#000;
+.score-gold   { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; }
+.score-purple { background: linear-gradient(135deg,#8e2de2,#4a00e0); }
+.score-blue   { background: linear-gradient(135deg,#00c6ff,#0072ff); }
+.score-green  { background: linear-gradient(135deg,#56ab2f,#a8e063); color:#072b00; }
+.score-red    { background: linear-gradient(135deg,#cb2d3e,#ef473a); }
+
+/* =====================
+   RESPONSIVE BREAKPOINTS
+===================== */
+
+/* Large tablets / small laptops */
+@media (max-width: 1200px) {
+    .player-row {
+        grid-template-columns:
+            50px
+            minmax(140px, 1.2fr)
+            repeat(4, 1fr)
+            110px;
+    }
+
+    /* hide least important stat */
+    .player-row > .stats-bar-wrapper:nth-child(7) {
+        display: none;
+    }
 }
 
-.score-purple {
-    background: linear-gradient(135deg,#8e2de2,#4a00e0);
-}
-
-.score-blue {
-    background: linear-gradient(135deg,#00c6ff,#0072ff);
-}
-
-.score-green {
-    background: linear-gradient(135deg,#56ab2f,#a8e063);
-    color:#072b00;
-}
-
-.score-red {
-    background: linear-gradient(135deg,#cb2d3e,#ef473a);
-}
-
-/* Mobile */
+/* Tablets */
 @media (max-width: 900px) {
     .player-row {
-        grid-template-columns: 1fr;
-        gap: 14px;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "rank score"
+            "name name"
+            "war war"
+            "cwl cwl"
+            "gold games"
+            "events events";
+        gap: 12px;
     }
-    .final-score {
-        width: 100%;
+
+    .rank-badge   { grid-area: rank; }
+    .final-score  { grid-area: score; }
+    .player-name  { grid-area: name; }
+
+    .player-row > .stats-bar-wrapper:nth-child(3) { grid-area: war; }
+    .player-row > .stats-bar-wrapper:nth-child(4) { grid-area: cwl; }
+    .player-row > .stats-bar-wrapper:nth-child(5) { grid-area: gold; }
+    .player-row > .stats-bar-wrapper:nth-child(6) { grid-area: games; }
+    .player-row > .stats-bar-wrapper:nth-child(7) {
+        grid-area: events;
+        display: flex;
+    }
+}
+
+/* Phones */
+@media (max-width: 520px) {
+    .player-row {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "rank"
+            "name"
+            "score"
+            "war"
+            "cwl"
+            "gold"
+            "games"
+            "events";
+        padding: 14px;
+    }
+
+    .rank-badge {
+        margin: auto;
+    }
+
+    .player-name {
+        text-align: center;
     }
 }
 </style>
