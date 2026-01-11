@@ -6,6 +6,22 @@ import streamlit.components.v1 as components
 # --- Google Sheet URL ---
 SHEET_URL = "https://docs.google.com/spreadsheets/d/118gjjn-oFYt4-hy8HVxius8LzeMA6V0SGVI_Mto5Heg/export?format=xlsx"
 
+# --- Streamlit global dark config ---
+st.set_page_config(
+    page_title="ClashIntel",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+st.markdown("""
+<style>
+[data-testid="stAppViewContainer"] {
+    background: radial-gradient(circle at top, #0b1020, #05070d 60%);
+}
+[data-testid="stHeader"] { background: transparent; }
+</style>
+""", unsafe_allow_html=True)
+
 # --- Load data ---
 def load_player_data():
     try:
@@ -76,106 +92,157 @@ df = compute_scores(load_player_data())
 # --- HTML + CSS ---
 html = """
 <style>
-body { font-family: 'Orbitron', sans-serif; background: #0f0f2e; color: #fff; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-.leaderboard { display: flex; flex-direction: column; gap: 15px; width: 90%; margin: 0 auto; }
+:root {
+    --bg-card: rgba(255,255,255,0.04);
+    --border-soft: rgba(255,255,255,0.08);
+    --neon: #5ee7ff;
+    --text-main: #e8ecf1;
+    --text-muted: #9aa4b2;
+}
 
+/* Base */
+body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    color: var(--text-main);
+}
+
+.leaderboard {
+    max-width: 1400px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 40px;
+}
+
+/* Player Card */
 .player-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 15px 20px; border-radius: 15px; background: rgba(0,0,0,0.6);
-    box-shadow: 0 0 15px rgba(0,255,255,0.3);
-    flex-wrap: wrap; transition: 0.3s;
+    display: grid;
+    grid-template-columns: 60px 1.2fr repeat(5, 1fr) 140px;
+    gap: 12px;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 18px;
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.05),
+        rgba(255,255,255,0.02)
+    );
+    border: 1px solid var(--border-soft);
+    backdrop-filter: blur(14px);
+    transition: all 0.25s ease;
 }
-.player-row:hover { transform: scale(1.02); box-shadow: 0 0 25px #00FFFF; }
 
-/* Rank badges */
+.player-row:hover {
+    transform: translateY(-2px);
+    border-color: rgba(94,231,255,0.35);
+    box-shadow: 0 0 0 1px rgba(94,231,255,0.25),
+                0 18px 40px rgba(0,0,0,0.45);
+}
+
+/* Rank */
 .rank-badge {
-    width: 50px; height: 50px; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    font-weight: bold; margin-right: 15px; flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-muted);
 }
-.rank-badge.gold    { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; box-shadow:0 0 12px #FFD700; }
-.rank-badge.silver  { background:#C0C0C0; color:#000; }
-.rank-badge.bronze  { background:#CD7F32; color:#fff; }
 
-.player-name { font-size: 20px; font-weight: bold; color: #00FFFF; flex: 1; min-width:150px; }
+.rank-badge.gold { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; }
+.rank-badge.silver { background:#cfd3d6; color:#000; }
+.rank-badge.bronze { background:#c27c3d; color:#fff; }
 
-.stats-bar-wrapper { flex: 1; min-width: 150px; margin: 5px 10px; }
-.stats-label { font-size: 12px; margin-bottom: 2px; }
+/* Name */
+.player-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--text-main);
+}
+
+/* Stat Blocks */
+.stats-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stats-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
 
 .stats-bar-container {
-    width: 100%; background: rgba(255,255,255,0.1);
-    border-radius: 12px; overflow: hidden; height: 20px;
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    overflow: hidden;
 }
 
 .stats-bar {
-    height: 100%; text-align: center; padding: 0 5px;
-    font-weight: bold; line-height: 20px; border-radius: 12px 0 0 12px;
-    width: var(--bar-width);
+    height: 100%;
+    border-radius: 999px;
 }
 
-.attack { background: linear-gradient(90deg, #FF4500, #FF6347); }
-.gold   { background: linear-gradient(90deg, #FFD700, #FFEA70); color:#000 !important; }
-.games  { background: linear-gradient(90deg, #00BFFF, #1E90FF); }
-.events { background: linear-gradient(90deg, #32CD32, #7CFC00); }
+/* Bar Colors (muted, pro) */
+.attack { background: linear-gradient(90deg,#ff6a3d,#ff9a3d); }
+.gold   { background: linear-gradient(90deg,#f5c542,#ffe08a); }
+.games  { background: linear-gradient(90deg,#4facfe,#00f2fe); }
+.events { background: linear-gradient(90deg,#43e97b,#38f9d7); }
 
-/* ✨ DYNAMIC FINAL SCORE COLORS */
+/* Final Score */
 .final-score {
-    font-weight: bold;
-    min-width: 120px;
     text-align: center;
-    font-size: 22px;
-    padding: 10px 15px;
-    border-radius: 12px;
-    border: 2px solid rgba(255,255,255,0.25);
-    animation: pulseGlow 2s infinite alternate ease-in-out;
-    transition: 0.2s;
+    font-weight: 800;
+    font-size: 20px;
+    padding: 12px 0;
+    border-radius: 14px;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--border-soft);
 }
 
-/* Hover effect */
-.final-score:hover {
-    transform: scale(1.08);
-}
-
-/* Color tiers */
+/* Score tiers */
 .score-gold {
-    background: linear-gradient(135deg, #FFD700, #FFB700);
-    color: #000;
-    box-shadow: 0 0 25px rgba(255,215,0,0.8);
+    background: linear-gradient(135deg,#FFD700,#FFB700);
+    color:#000;
 }
 
 .score-purple {
-    background: linear-gradient(135deg, #A020F0, #C060FF);
-    color: #fff;
-    box-shadow: 0 0 25px rgba(180,0,255,0.8);
+    background: linear-gradient(135deg,#8e2de2,#4a00e0);
 }
 
 .score-blue {
-    background: linear-gradient(135deg, #0080FF, #00C0FF);
-    color: #fff;
-    box-shadow: 0 0 25px rgba(0,160,255,0.8);
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
 }
 
 .score-green {
-    background: linear-gradient(135deg, #32CD32, #7CFC00);
-    color: #003000;
-    box-shadow: 0 0 25px rgba(0,255,100,0.7);
+    background: linear-gradient(135deg,#56ab2f,#a8e063);
+    color:#072b00;
 }
 
 .score-red {
-    background: linear-gradient(135deg, #FF3B3B, #FF7070);
-    color: #fff;
-    box-shadow: 0 0 25px rgba(255,60,60,0.8);
+    background: linear-gradient(135deg,#cb2d3e,#ef473a);
 }
 
-@keyframes pulseGlow {
-    0%   { box-shadow: 0 0 10px rgba(0,255,255,0.3); }
-    100% { box-shadow: 0 0 25px rgba(0,255,255,0.7); }
-}
-
-@media screen and (max-width:800px){
-    .player-row { flex-direction: column; align-items: flex-start; }
-    .stats-bar-wrapper { width: 100%; margin:5px 0; }
+/* Mobile */
+@media (max-width: 900px) {
+    .player-row {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .final-score {
+        width: 100%;
+    }
 }
 </style>
 
