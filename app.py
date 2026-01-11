@@ -121,7 +121,11 @@ body {
 /* Player Card */
 .player-row {
     display: grid;
-    grid-template-columns: 60px 1.2fr repeat(5, 1fr) 140px;
+    grid-template-columns: 
+        60px          /* Rank */
+        minmax(180px, 1.4fr)  /* Name */
+        repeat(5, minmax(140px, 1fr)) /* Stats */
+        130px;        /* Final score */
     gap: 12px;
     align-items: center;
     padding: 16px 20px;
@@ -179,6 +183,15 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.stats-label span[style] {
+    font-size: 10px;
+    letter-spacing: 0.04em;
 }
 
 .stats-bar-container {
@@ -187,6 +200,12 @@ body {
     background: rgba(255,255,255,0.08);
     border-radius: 999px;
     overflow: hidden;
+}
+
+@media (min-width: 1100px) {
+    .stats-bar-container {
+        height: 12px;
+    }
 }
 
 .stats-bar {
@@ -200,6 +219,7 @@ body {
     font-weight: 600;
     color: #e8ecf1;
     opacity: 0.85;
+    margin-left: 8px;
 }
 
 /* Bar Colors (muted, pro) */
