@@ -291,13 +291,13 @@ for _, row in df.iterrows():
         <!-- ⚔️ WAR -->
         <div class="stats-bar-wrapper">
             <div class="stats-label">
-                ⚔️ War
+                ⚔️ War <span style="opacity:0.6;">(Stars / Attacks)</span>
                 <span class="stat-value">
-                    {int(row['War_Stars'])}/{int(row['War_Attempts'])}
+                    {int(row['War_Stars'])} / {int(row['War_Attempts'])}
                 </span>
             </div>
             <div class="stats-bar-container"
-                 title="War: {int(row['War_Stars'])}/{int(row['War_Attempts'])}">
+                 title="Total Stars / War Attacks">
                 <div class="stats-bar attack"
                      style="width:{min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
                 </div>
@@ -307,13 +307,13 @@ for _, row in df.iterrows():
         <!-- 🛡️ CWL -->
         <div class="stats-bar-wrapper">
             <div class="stats-label">
-                🛡️ CWL
+                🛡️ CWL <span style="opacity:0.6;">(Stars / Attacks)</span>
                 <span class="stat-value">
-                    {int(row['CWL_Stars'])}/{int(row['CWL_Attempts'])}
+                    {int(row['CWL_Stars'])} / {int(row['CWL_Attempts'])}
                 </span>
             </div>
             <div class="stats-bar-container"
-                 title="CWL: {int(row['CWL_Stars'])}/{int(row['CWL_Attempts'])}">
+                 title="Total Stars / CWL Attacks">
                 <div class="stats-bar attack"
                      style="width:{min((row['CWL_Stars']/(row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%">
                 </div>
