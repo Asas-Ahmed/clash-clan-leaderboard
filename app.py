@@ -288,50 +288,82 @@ for _, row in df.iterrows():
         <div class="{badge_class}">{row['Rank']}</div>
         <div class="player-name">{row['Name']}</div>
 
+        <!-- ⚔️ WAR -->
         <div class="stats-bar-wrapper">
             <div class="stats-label">
                 ⚔️ War
-                <span class="stat-value">{int(row['War_Stars'])}/{int(row['War_Attempts'])}</span>
+                <span class="stat-value">
+                    {int(row['War_Stars'])}/{int(row['War_Attempts'])}
+                </span>
             </div>
-            <div class="stats-bar-container" title="{int(row['War_Stars'])}/{int(row['War_Attempts'])}">
+            <div class="stats-bar-container"
+                 title="War: {int(row['War_Stars'])}/{int(row['War_Attempts'])}">
                 <div class="stats-bar attack"
                      style="width:{min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%">
                 </div>
             </div>
         </div>
-
+        
+        <!-- 🛡️ CWL -->
         <div class="stats-bar-wrapper">
-            <div class="stats-label">🛡️ CWL Stars / Attempts</div>
-            <div class="stats-bar-container">
-                <div class="stats-bar attack" style="--bar-width:{min((row['CWL_Stars']/(row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%">
+            <div class="stats-label">
+                🛡️ CWL
+                <span class="stat-value">
                     {int(row['CWL_Stars'])}/{int(row['CWL_Attempts'])}
+                </span>
+            </div>
+            <div class="stats-bar-container"
+                 title="CWL: {int(row['CWL_Stars'])}/{int(row['CWL_Attempts'])}">
+                <div class="stats-bar attack"
+                     style="width:{min((row['CWL_Stars']/(row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%">
                 </div>
             </div>
         </div>
-
+        
+        <!-- 💰 CAPITAL GOLD -->
         <div class="stats-bar-wrapper">
-            <div class="stats-label">💰 Capital Gold</div>
-            <div class="stats-bar-container">
-                <div class="stats-bar gold" style="--bar-width:{min(row['Gold_Scaled']*100,100)}%">
+            <div class="stats-label">
+                💰 Capital Gold
+                <span class="stat-value">
                     {int(row['ClanCapital_Gold']):,}
+                </span>
+            </div>
+            <div class="stats-bar-container"
+                 title="Capital Gold: {int(row['ClanCapital_Gold']):,}">
+                <div class="stats-bar gold"
+                     style="width:{min(row['Gold_Scaled']*100,100)}%">
                 </div>
             </div>
         </div>
-
+        
+        <!-- 🎮 CLAN GAMES -->
         <div class="stats-bar-wrapper">
-            <div class="stats-label">🎮 Clan Games</div>
-            <div class="stats-bar-container">
-                <div class="stats-bar games" style="--bar-width:{min(row['Games_Scaled']*100,100)}%">
+            <div class="stats-label">
+                🎮 Clan Games
+                <span class="stat-value">
                     {int(row['ClanGames_Points']):,}
+                </span>
+            </div>
+            <div class="stats-bar-container"
+                 title="Clan Games: {int(row['ClanGames_Points']):,}">
+                <div class="stats-bar games"
+                     style="width:{min(row['Games_Scaled']*100,100)}%">
                 </div>
             </div>
         </div>
-
+        
+        <!-- 🎯 EVENTS -->
         <div class="stats-bar-wrapper">
-            <div class="stats-label">🎯 Events</div>
-            <div class="stats-bar-container">
-                <div class="stats-bar events" style="--bar-width:{min(row['Events_Scaled']*100,100)}%">
+            <div class="stats-label">
+                🎯 Events
+                <span class="stat-value">
                     {row['Events_Scaled']*100:.0f}%
+                </span>
+            </div>
+            <div class="stats-bar-container"
+                 title="Events: {row['Events_Scaled']*100:.0f}%">
+                <div class="stats-bar events"
+                     style="width:{min(row['Events_Scaled']*100,100)}%">
                 </div>
             </div>
         </div>
