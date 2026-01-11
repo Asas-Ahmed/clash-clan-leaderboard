@@ -19,13 +19,15 @@ def load_player_data():
 
 # --- Compute scores ---
 def compute_scores(df):
-    for col in ["War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
-                "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"]:
+    for col in [
+        "War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
+        "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"
+    ]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
     MAX_WAR, MAX_CWL = 10, 7
 
-    # Safe divisions
+    # Efficiencies
     df["War_Efficiency"] = df["War_Stars"] / df["War_Attempts"].replace(0, 1) / 3
     df["CWL_Efficiency"] = df["CWL_Stars"] / df["CWL_Attempts"].replace(0, 1) / 3
 
@@ -36,9 +38,12 @@ def compute_scores(df):
     df["Fair_War_Score"] = df["War_Efficiency"] * df["War_Participation_Factor"]
     df["Fair_CWL_Score"] = df["CWL_Efficiency"] * df["CWL_Participation_Factor"]
 
-    df["Attack_Success_pct"] = ((df["Fair_War_Score"]*0.6 + df["Fair_CWL_Score"]*0.4)*100)
+    # 🔥 SAME AS PySide
+    df["War_CWL_Skill_Score"] = (
+        (df["Fair_War_Score"] * 0.6 + df["Fair_CWL_Score"] * 0.4) * 100
+    )
 
-    # Avoid division by zero on scaling
+    # Scaling
     gold_max = df["ClanCapital_Gold"].max() or 1
     games_max = df["ClanGames_Points"].max() or 1
 
@@ -46,17 +51,19 @@ def compute_scores(df):
     df["Games_Scaled"] = df["ClanGames_Points"] / games_max
     df["Events_Scaled"] = df["RushEvents_Participation_pct"] / 100
 
+    # 🔥 FINAL SCORE — IDENTICAL WEIGHTS
     df["FinalScore"] = (
-        df["Attack_Success_pct"]*0.35 +
-        df["Gold_Scaled"]*25 +
-        df["Games_Scaled"]*20 +
-        df["Events_Scaled"]*20
-    )
+        (df["War_CWL_Skill_Score"] / 100) * 0.30 +
+        df["Gold_Scaled"] * 0.10 +
+        df["Games_Scaled"] * 0.20 +
+        df["Events_Scaled"] * 0.40
+    ) * 100
 
-    # Clean all NaN/inf before ranking
     df = df.replace([np.inf, -np.inf], np.nan).fillna(0)
 
-    df["Rank"] = df["FinalScore"].rank(ascending=False, method="min").astype(int)
+    df["Rank"] = df["FinalScore"].rank(
+        ascending=False, method="min"
+    ).astype(int)
 
     return df.sort_values("FinalScore", ascending=False).reset_index(drop=True)
 
@@ -190,11 +197,11 @@ for _, row in df.iterrows():
 
     # Dynamic Final Score color
     score = row["FinalScore"]
-    if score >= 90:
+    if score >= 85:
         score_class = "score-gold"
-    elif score >= 75:
+    elif score >= 70:
         score_class = "score-purple"
-    elif score >= 60:
+    elif score >= 55:
         score_class = "score-blue"
     elif score >= 40:
         score_class = "score-green"
