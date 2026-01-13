@@ -69,10 +69,10 @@ def compute_scores(df):
 
     # 🔥 FINAL SCORE — IDENTICAL WEIGHTS
     df["FinalScore"] = (
-        (df["War_CWL_Skill_Score"] / 100) * 0.33 +
+        (df["War_CWL_Skill_Score"] / 100) * 0.32 +
         df["Gold_Scaled"] * 0.05 +
         df["Games_Scaled"] * 0.21 +
-        df["Events_Scaled"] * 0.41
+        df["Events_Scaled"] * 0.42
     ) * 100
 
     df = df.replace([np.inf, -np.inf], np.nan).fillna(0)
