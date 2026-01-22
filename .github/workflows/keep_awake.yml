@@ -1,0 +1,18 @@
+name: Keep Streamlit App Awake
+
+on:
+  schedule:
+    # Every 6 hours (safe for Streamlit sleep limits)
+    - cron: "0 */11 * * *"
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  keep-awake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit App
+        run: |
+          echo "Pinging Streamlit app..."
+          curl --fail --silent --show-error \
+               --max-time 30 \
+               https://coc-area51.streamlit.app/
