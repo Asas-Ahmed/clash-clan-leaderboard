@@ -2,7 +2,7 @@ name: Keep Streamlit App Awake
 
 on:
   schedule:
-    # Every 6 hours (safe for Streamlit sleep limits)
+    # Every 11 hours (safe for Streamlit sleep limits)
     - cron: "0 */11 * * *"
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
