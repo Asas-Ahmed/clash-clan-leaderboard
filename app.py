@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
+from datetime import datetime
 
 # --- Google Sheet URL ---
 SHEET_URL = "https://docs.google.com/spreadsheets/d/118gjjn-oFYt4-hy8HVxius8LzeMA6V0SGVI_Mto5Heg/export?format=xlsx"
@@ -460,3 +461,4 @@ for _, row in df.iterrows():
 html += "</div>"
 
 components.html(html, height=9000, scrolling=True)
+st.sidebar.markdown(f"**Last Ping:** {datetime.now().strftime('%H:%M:%S')}")
