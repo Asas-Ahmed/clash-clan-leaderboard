@@ -1,18 +1,24 @@
-name: Keep Streamlit App Awake
+name: Wake Streamlit App
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
-  workflow_dispatch: 
+    - cron: "0 */6 * * *" # Runs every 6 hours
+  workflow_dispatch:
 
 jobs:
-  keep-awake:
+  wake-up:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Streamlit App
-        run: |
-          echo "Pinging Streamlit app..."
-          curl -I -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
-               --fail --silent --show-error \
-               --max-time 60 \
-               https://coc-area51.streamlit.app/
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Selenium
+        run: pip install selenium webdriver-manager
+
+      - name: Run Wake Script
+        run: python wake_app.py
