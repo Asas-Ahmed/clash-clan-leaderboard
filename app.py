@@ -7,7 +7,7 @@ import pytz
 
 # --- Get the current time for Sri Lanka ---
 sl_tz = pytz.timezone('Asia/Colombo')
-current_time = datetime.now(sl_tz).strftime('%H:%M:%S')
+current_time = datetime.now(sl_tz).strftime('%I:%M:%S %p')
 
  # --- Display the Static Status Card ---
 st.sidebar.markdown(f"""
@@ -17,15 +17,7 @@ st.sidebar.markdown(f"""
         padding: 12px;
         border-radius: 8px;
         border: 1px solid #30363d;
-        font-family: 'Inter', sans-serif;
-    }}
-    .label {{
-        color: #8b949e;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }}
     .time-val {{
         color: #ffffff;
@@ -45,7 +37,9 @@ st.sidebar.markdown(f"""
     </style>
     
     <div class="status-card">
-        <div class="label">Last Page Refresh</div>
+        <div style="color: #8b949e; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+            System Heartbeat
+        </div>
         <div class="time-val">
             <span class="status-dot"></span>
             {current_time}
