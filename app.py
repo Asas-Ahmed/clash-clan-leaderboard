@@ -2,53 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
-from datetime import datetime
-import pytz
-
-# --- Get the current time for Sri Lanka ---
-sl_tz = pytz.timezone('Asia/Colombo')
-current_time = datetime.now(sl_tz).strftime('%I:%M:%S %p')
-
- # --- Display the Static Status Card ---
-st.sidebar.markdown(f"""
-    <style>
-    .status-card {{
-        background-color: #161b22;
-        padding: 12px;
-        border-radius: 8px;
-        border: 1px solid #30363d;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }}
-    .time-val {{
-        color: #ffffff;
-        font-size: 1.1rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }}
-    .status-dot {{
-        height: 8px;
-        width: 8px;
-        background-color: #238636;
-        border-radius: 50%;
-        box-shadow: 0 0 5px #238636;
-    }}
-    </style>
-    
-    <div class="status-card">
-        <div style="color: #8b949e; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-            System Heartbeat
-        </div>
-        <div class="time-val">
-            <span class="status-dot"></span>
-            {current_time}
-        </div>
-        <div style="color: #484f58; font-size: 9px; margin-top: 4px;">
-            GMT+5:30 • Colombo, SL
-        </div>
-    </div>
-""", unsafe_allow_html=True)
 
 # --- Google Sheet URL ---
 SHEET_URL = "https://docs.google.com/spreadsheets/d/118gjjn-oFYt4-hy8HVxius8LzeMA6V0SGVI_Mto5Heg/export?format=xlsx"
