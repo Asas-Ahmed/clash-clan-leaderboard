@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
+import os
 
 # --- Google Sheet URL ---
-SHEET_URL = "https://docs.google.com/spreadsheets/d/118gjjn-oFYt4-hy8HVxius8LzeMA6V0SGVI_Mto5Heg/export?format=xlsx"
+SHEET_URL = os.getenv("SHEET_URL")
 
 # --- Streamlit global dark config ---
 st.set_page_config(
