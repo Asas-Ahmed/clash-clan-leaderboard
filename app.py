@@ -3,18 +3,18 @@ import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
 import os
-from functools import lru_cache
 
-# --- Google Sheet URL from environment ---
+# --- Google Sheet URL ---
 SHEET_URL = os.getenv("SHEET_URL")
 
-# --- Streamlit global dark config ---
+# --- Streamlit global config ---
 st.set_page_config(
     page_title="ClashIntel",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
+# Deep dark background for the Streamlit container
 st.markdown("""
 <style>
 [data-testid="stAppViewContainer"] {
@@ -24,176 +24,180 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- CACHING for data ---
-@st.cache_data(ttl=3600)  # cache 1 hour
-def load_player_data():
+# --- Data Loading & Processing ---
+@st.cache_data(ttl=3600)
+def load_and_compute():
     try:
         df = pd.read_excel(SHEET_URL)
     except Exception as e:
-        st.error(f"Failed to load data from Google Sheet: {e}")
-        df = pd.DataFrame(columns=[
-            "Name","War_Attempts","War_Stars","CWL_Attempts",
-            "CWL_Stars","ClanCapital_Gold","ClanGames_Points",
-            "RushEvents_Participation_pct"
-        ])
-    return df.fillna(0)
+        st.error(f"Error loading data: {e}")
+        return pd.DataFrame()
 
-@st.cache_data(ttl=3600)
-def compute_scores(df):
-    for col in [
-        "War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
-        "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"
-    ]:
+    # Numeric conversion
+    cols = ["War_Attempts","War_Stars","CWL_Attempts","CWL_Stars",
+            "ClanCapital_Gold","ClanGames_Points","RushEvents_Participation_pct"]
+    for col in cols:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-    MAX_WAR, MAX_CWL = 10, 7
-
-    # Efficiencies
+    # Scoring Logic
+    MAX_WAR, MAX_CWL, k = 10, 7, 8
     df["War_Efficiency"] = df["War_Stars"] / df["War_Attempts"].replace(0,1) / 3
     df["CWL_Efficiency"] = df["CWL_Stars"] / df["CWL_Attempts"].replace(0,1) / 3
+    
+    df["War_Part"] = 1 / (1 + np.exp(-k*((df["War_Attempts"]/MAX_WAR)-0.5)))
+    df["CWL_Part"] = 1 / (1 + np.exp(-k*((df["CWL_Attempts"]/MAX_CWL)-0.5)))
+    
+    skill_score = ((df["War_Efficiency"] * df["War_Part"] * 0.6) + 
+                   (df["CWL_Efficiency"] * df["CWL_Part"] * 0.4)) * 100
 
-    k = 8
-    df["War_Participation_Factor"] = 1 / (1 + np.exp(-k*((df["War_Attempts"]/MAX_WAR)-0.5)))
-    df["CWL_Participation_Factor"] = 1 / (1 + np.exp(-k*((df["CWL_Attempts"]/MAX_CWL)-0.5)))
-
-    df["Fair_War_Score"] = df["War_Efficiency"] * df["War_Participation_Factor"]
-    df["Fair_CWL_Score"] = df["CWL_Efficiency"] * df["CWL_Participation_Factor"]
-
-    # 🔥 SAME AS PySide
-    df["War_CWL_Skill_Score"] = (
-        (df["Fair_War_Score"] * 0.6 + df["Fair_CWL_Score"] * 0.4) * 100
-    )
-
-    # Scaling
     gold_max = df["ClanCapital_Gold"].max() or 1
     games_max = df["ClanGames_Points"].max() or 1
 
-    df["Gold_Scaled"] = df["ClanCapital_Gold"] / gold_max
-    df["Games_Scaled"] = df["ClanGames_Points"] / games_max
-    df["Events_Scaled"] = df["RushEvents_Participation_pct"] / 100
-
-    # 🔥 FINAL SCORE — IDENTICAL WEIGHTS
     df["FinalScore"] = (
-        (df["War_CWL_Skill_Score"] / 100) * 0.32 +
-        df["Gold_Scaled"] * 0.05 +
-        df["Games_Scaled"] * 0.21 +
-        df["Events_Scaled"] * 0.42
+        (skill_score / 100) * 0.32 +
+        (df["ClanCapital_Gold"] / gold_max) * 0.05 +
+        (df["ClanGames_Points"] / games_max) * 0.21 +
+        (df["RushEvents_Participation_pct"] / 100) * 0.42
     ) * 100
-
-    df = df.replace([np.inf, -np.inf], np.nan).fillna(0)
+    
     df["Rank"] = df["FinalScore"].rank(ascending=False, method="min").astype(int)
-
     return df.sort_values("FinalScore", ascending=False).reset_index(drop=True)
 
-# --- Lazy load / spinner ---
-with st.spinner("Loading leaderboard..."):
-    df = compute_scores(load_player_data())
+df = load_and_compute()
 
 st.title("🏆 Top Clan Players Leaderboard")
 
-# --- HTML + CSS (same style as before) ---
-html = """
+# --- RESTORED RESPONSIVE HTML + CSS ---
+html_content = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 :root {
     --bg-card: rgba(255,255,255,0.04);
     --border-soft: rgba(255,255,255,0.08);
-    --neon: #5ee7ff;
     --text-main: #e8ecf1;
     --text-muted: #9aa4b2;
 }
-html, body { max-width: 100%; overflow-x: hidden; }
-body { font-family: 'Inter', sans-serif; background: transparent; color: var(--text-main); }
-.leaderboard { width: 100%; max-width: min(1400px,96vw); margin:auto; display:flex; flex-direction:column; gap:14px; padding-bottom:40px; padding-inline:clamp(8px,2vw,20px); }
-.player-row { display:grid; grid-template-columns:60px minmax(160px,1.3fr) repeat(5,minmax(120px,1fr)) 120px; gap:12px; align-items:center; padding:16px 20px; border-radius:18px; background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border:1px solid var(--border-soft); backdrop-filter: blur(14px); transition: all 0.25s ease; }
-.player-row:hover { transform:translateY(-2px); border-color: rgba(94,231,255,0.35); box-shadow:0 0 0 1px rgba(94,231,255,0.25), 0 18px 40px rgba(0,0,0,0.45); }
-.rank-badge { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-weight:700; background: rgba(255,255,255,0.08); color:var(--text-muted); }
-.rank-badge.gold{background:linear-gradient(135deg,#FFD700,#FFB700);color:#000;}
-.rank-badge.silver{background:#cfd3d6;color:#000;}
-.rank-badge.bronze{background:#c27c3d;color:#fff;}
-.player-name { font-size:clamp(15px,1.3vw,18px); font-weight:700; letter-spacing:0.3px; color:var(--text-main);}
-.stats-bar-wrapper{display:flex;flex-direction:column;gap:6px;}
-.stats-label{font-size:clamp(10px,0.9vw,11px);text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;white-space:nowrap;}
-.stats-label span[style]{font-size:10px;letter-spacing:0.04em;}
-.stats-bar-container{width:100%;height:clamp(9px,1vw,12px);background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;}
-.stats-bar{height:100%;border-radius:999px;}
-.stat-value{font-size:11px;font-weight:600;color:#e8ecf1;opacity:0.85;margin-left:8px;}
-.attack{background:linear-gradient(90deg,#ff6a3d,#ff9a3d);}
-.gold{background:linear-gradient(90deg,#f5c542,#ffe08a);}
-.games{background:linear-gradient(90deg,#4facfe,#00f2fe);}
-.events{background:linear-gradient(90deg,#43e97b,#38f9d7);}
-.final-score{text-align:center;font-weight:800;font-size:clamp(16px,1.4vw,20px);padding:12px 0;border-radius:14px;letter-spacing:0.04em;border:1px solid var(--border-soft);}
-.score-gold{background:linear-gradient(135deg,#FFD700,#FFB700);color:#000;}
-.score-purple{background:linear-gradient(135deg,#8e2de2,#4a00e0);}
-.score-blue{background:linear-gradient(135deg,#00c6ff,#0072ff);}
-.score-green{background:linear-gradient(135deg,#56ab2f,#a8e063);color:#072b00;}
-.score-red{background:linear-gradient(135deg,#cb2d3e,#ef473a);}
+
+body { font-family: 'Inter', sans-serif; background: transparent; color: var(--text-main); margin: 0; }
+
+.leaderboard {
+    width: 100%;
+    max-width: 1400px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 10px;
+}
+
+/* DESKTOP LAYOUT (Default) */
+.player-row {
+    display: grid;
+    grid-template-columns: 60px minmax(160px, 1.3fr) repeat(5, 1fr) 120px;
+    gap: 12px;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid var(--border-soft);
+    backdrop-filter: blur(14px);
+}
+
+.rank-badge { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-weight: 700; background: rgba(255,255,255,0.08); }
+.rank-badge.gold { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; }
+.rank-badge.silver { background:#cfd3d6; color:#000; }
+.rank-badge.bronze { background:#c27c3d; color:#fff; }
+
+.player-name { font-size: 18px; font-weight: 700; }
+
+.stats-bar-wrapper { display: flex; flex-direction: column; gap: 6px; }
+.stats-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: flex; justify-content: space-between; }
+.stats-bar-container { width: 100%; height: 10px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
+.stats-bar { height: 100%; border-radius: 10px; }
+
+.attack { background: linear-gradient(90deg,#ff6a3d,#ff9a3d); }
+.gold { background: linear-gradient(90deg,#f5c542,#ffe08a); }
+.games { background: linear-gradient(90deg,#4facfe,#00f2fe); }
+.events { background: linear-gradient(90deg,#43e97b,#38f9d7); }
+
+.final-score { text-align: center; font-weight: 800; font-size: 18px; padding: 10px; border-radius: 12px; border: 1px solid var(--border-soft); }
+.score-gold { background: linear-gradient(135deg,#FFD700,#FFB700); color:#000; }
+.score-red { background: linear-gradient(135deg,#cb2d3e,#ef473a); }
+
+/* RESPONSIVE: TABLETS */
+@media (max-width: 1000px) {
+    .player-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 
+            "rank score"
+            "name name"
+            "war cwl"
+            "gold games"
+            "events events";
+    }
+    .rank-badge { grid-area: rank; }
+    .final-score { grid-area: score; }
+    .player-name { grid-area: name; text-align: center; margin: 10px 0; }
+    .war-box { grid-area: war; }
+    .cwl-box { grid-area: cwl; }
+    .gold-box { grid-area: gold; }
+    .games-box { grid-area: games; }
+    .events-box { grid-area: events; }
+}
+
+/* RESPONSIVE: PHONES */
+@media (max-width: 500px) {
+    .player-row {
+        grid-template-columns: 1fr;
+        grid-template-areas: "rank" "name" "score" "war" "cwl" "gold" "games" "events";
+    }
+    .rank-badge { margin: auto; }
+}
 </style>
 <div class="leaderboard">
 """
 
-# --- Add player rows with dynamic score color ---
 for _, row in df.iterrows():
-    # Rank badges
-    badge_class = (
-        "rank-badge gold" if row["Rank"]==1 else
-        "rank-badge silver" if row["Rank"]==2 else
-        "rank-badge bronze" if row["Rank"]==3 else
-        "rank-badge"
-    )
-    # Final score color
-    score_class = (
-        "score-gold" if row["FinalScore"]>=85 else
-        "score-purple" if row["FinalScore"]>=70 else
-        "score-blue" if row["FinalScore"]>=55 else
-        "score-green" if row["FinalScore"]>=40 else
-        "score-red"
-    )
-
-    html += f"""
+    b_class = "rank-badge gold" if row["Rank"]==1 else "rank-badge silver" if row["Rank"]==2 else "rank-badge bronze" if row["Rank"]==3 else "rank-badge"
+    s_class = "score-gold" if row["FinalScore"] >= 85 else "score-red" if row["FinalScore"] < 40 else ""
+    
+    # Calculate bar widths
+    war_w = min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*33.3, 100)
+    cwl_w = min((row['CWL_Stars']/(row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*33.3, 100)
+    
+    html_content += f"""
     <div class="player-row">
-        <div class="{badge_class}">{row['Rank']}</div>
+        <div class="{b_class}">{row['Rank']}</div>
         <div class="player-name">{row['Name']}</div>
-        <div class="stats-bar-wrapper">
-            <div class="stats-label">⚔️ War <span style="opacity:0.6;">(Stars / Attacks)</span>
-            <span class="stat-value">{int(row['War_Stars'])} / {int(row['War_Attempts'])}</span></div>
-            <div class="stats-bar-container" title="Total Stars / War Attacks">
-                <div class="stats-bar attack" style="width:{min((row['War_Stars']/(row['War_Attempts'] if row['War_Attempts']>0 else 1))*100,100)}%"></div>
-            </div>
+        
+        <div class="stats-bar-wrapper war-box">
+            <div class="stats-label">War <span>{int(row['War_Stars'])}★</span></div>
+            <div class="stats-bar-container"><div class="stats-bar attack" style="width:{war_w}%"></div></div>
         </div>
-        <div class="stats-bar-wrapper">
-            <div class="stats-label">🛡️ CWL <span style="opacity:0.6;">(Stars / Attacks)</span>
-            <span class="stat-value">{int(row['CWL_Stars'])} / {int(row['CWL_Attempts'])}</span></div>
-            <div class="stats-bar-container" title="Total Stars / CWL Attacks">
-                <div class="stats-bar attack" style="width:{min((row['CWL_Stars']/(row['CWL_Attempts'] if row['CWL_Attempts']>0 else 1))*100,100)}%"></div>
-            </div>
+        
+        <div class="stats-bar-wrapper cwl-box">
+            <div class="stats-label">CWL <span>{int(row['CWL_Stars'])}★</span></div>
+            <div class="stats-bar-container"><div class="stats-bar attack" style="width:{cwl_w}%"></div></div>
         </div>
-        <div class="stats-bar-wrapper">
-            <div class="stats-label">💰 Capital Gold
-            <span class="stat-value">{int(row['ClanCapital_Gold']):,}</span></div>
-            <div class="stats-bar-container" title="Capital Gold: {int(row['ClanCapital_Gold']):,}">
-                <div class="stats-bar gold" style="width:{min(row['Gold_Scaled']*100,100)}%"></div>
-            </div>
+
+        <div class="stats-bar-wrapper gold-box">
+            <div class="stats-label">Gold <span>{int(row['ClanCapital_Gold']):,}</span></div>
+            <div class="stats-bar-container"><div class="stats-bar gold" style="width:{row['FinalScore']}%"></div></div>
         </div>
-        <div class="stats-bar-wrapper">
-            <div class="stats-label">🎮 Clan Games
-            <span class="stat-value">{int(row['ClanGames_Points']):,}</span></div>
-            <div class="stats-bar-container" title="Clan Games: {int(row['ClanGames_Points']):,}">
-                <div class="stats-bar games" style="width:{min(row['Games_Scaled']*100,100)}%"></div>
-            </div>
+
+        <div class="stats-bar-wrapper games-box">
+            <div class="stats-label">Games <span>{int(row['ClanGames_Points'])}</span></div>
+            <div class="stats-bar-container"><div class="stats-bar games" style="width:{row['FinalScore']}%"></div></div>
         </div>
-        <div class="stats-bar-wrapper">
-            <div class="stats-label">🎯 Events
-            <span class="stat-value">{row['Events_Scaled']*100:.0f}%</span></div>
-            <div class="stats-bar-container" title="Events: {row['Events_Scaled']*100:.0f}%">
-                <div class="stats-bar events" style="width:{min(row['Events_Scaled']*100,100)}%"></div>
-            </div>
+
+        <div class="stats-bar-wrapper events-box">
+            <div class="stats-label">Events <span>{row['RushEvents_Participation_pct']}%</span></div>
+            <div class="stats-bar-container"><div class="stats-bar events" style="width:{row['RushEvents_Participation_pct']}%"></div></div>
         </div>
-        <div class="final-score {score_class}">⭐ {row['FinalScore']:.2f}</div>
+
+        <div class="final-score {s_class}">⭐ {row['FinalScore']:.2f}</div>
     </div>
     """
 
-html += "</div>"
-
-# --- Render leaderboard lazily ---
-components.html(html, height=9000, scrolling=True)
+html_content += "</div>"
+components.html(html_content, height=1200, scrolling=True)
