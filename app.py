@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 import os
 
 # --- Google Sheet URL ---
-SHEET_URL = os.getenv("SHEET_URL")
+SHEET_URL = st.secrets["SHEET_URL"]
 
 # --- Streamlit config ---
 st.set_page_config(
