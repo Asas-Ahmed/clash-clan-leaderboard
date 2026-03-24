@@ -80,7 +80,14 @@ def compute_scores(df):
     return df.sort_values("FinalScore", ascending=False).reset_index(drop=True)
 
 # --- Load & compute ---
-df = compute_scores(load_player_data())
+raw_data = load_player_data()
+
+if raw_data.empty:
+    st.warning("⚠️ The leaderboard is currently empty. Please check the Google Sheet link or format.")
+    df = raw_data # Keeps the empty columns
+else:
+    df = compute_scores(raw_data)
+
 st.title("🏆 Top Clan Players Leaderboard")
 
 # --- HTML + CSS (unchanged style) ---
