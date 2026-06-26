@@ -4,6 +4,34 @@ import numpy as np
 import streamlit.components.v1 as components
 import os
 
+import streamlit as st
+import streamlit.components.v1 as components
+
+components.html(
+    """
+    <script>
+    const parentDoc = window.parent.document;
+    
+    // Function to find and completely delete the injected profile overlay containers
+    function purgeOverlays() {
+        const profileContainers = parentDoc.querySelectorAll('div[class*="profileContainer"]');
+        const profilePreviews = parentDoc.querySelectorAll('div[class*="profilePreview"]');
+        const avatars = parentDoc.querySelectorAll('img[data-testid="appCreatorAvatar"]');
+        
+        profileContainers.forEach(el => el.remove());
+        profilePreviews.forEach(el => el.remove());
+        avatars.forEach(el => el.remove());
+    }
+
+    // Run immediately and set an interval to catch late-loading Streamlit elements
+    purgeOverlays();
+    setInterval(purgeOverlays, 500);
+    </script>
+    """,
+    height=0,
+    width=0
+)
+
 # --- Google Sheet URL ---
 SHEET_URL = st.secrets["SHEET_URL"]
 
