@@ -4,6 +4,23 @@ import numpy as np
 import streamlit.components.v1 as components
 import os
 
+st.markdown(
+    """
+    <style>
+    div[class^="_profileContainer"], 
+    div[class^="_profilePreview"], 
+    img[data-testid="appCreatorAvatar"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0px !important;
+        height: 0px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- Google Sheet URL ---
 SHEET_URL = st.secrets["SHEET_URL"]
 
