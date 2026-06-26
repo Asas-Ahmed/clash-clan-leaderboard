@@ -4,32 +4,44 @@ import numpy as np
 import streamlit.components.v1 as components
 import os
 
-import streamlit as st
-import streamlit.components.v1 as components
-
-components.html(
+st.markdown(
     """
+    <iframe height="0" width="0" style="display:none;" srcdoc="
     <script>
-    const parentDoc = window.parent.document;
-    
-    // Function to find and completely delete the injected profile overlay containers
-    function purgeOverlays() {
-        const profileContainers = parentDoc.querySelectorAll('div[class*="profileContainer"]');
-        const profilePreviews = parentDoc.querySelectorAll('div[class*="profilePreview"]');
-        const avatars = parentDoc.querySelectorAll('img[data-testid="appCreatorAvatar"]');
+        const targetParent = window.parent.document;
         
-        profileContainers.forEach(el => el.remove());
-        profilePreviews.forEach(el => el.remove());
-        avatars.forEach(el => el.remove());
-    }
+        function forceHideBadge() {
+            // Target the exact obfuscated classes you pasted
+            const badgeSelectors = [
+                '._profileContainer_gzau3_53',
+                '._profilePreview_gzau3_63',
+                '._profileImage_gzau3_78',
+                'img[data-testid=\"appCreatorAvatar\"]',
+                'div[class*=\"profileContainer\"]',
+                'div[class*=\"profilePreview\"]',
+                '._viewerBadge_aycw8_23',
+                'div[class*=\"viewerBadge\"]'
+            ];
+            
+            badgeSelectors.forEach(selector => {
+                const elements = targetParent.querySelectorAll(selector);
+                elements.forEach(el => {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.style.setProperty('opacity', '0', 'important');
+                    el.style.setProperty('height', '0px', 'important');
+                    el.style.setProperty('width', '0px', 'important');
+                });
+            });
+        }
 
-    // Run immediately and set an interval to catch late-loading Streamlit elements
-    purgeOverlays();
-    setInterval(purgeOverlays, 500);
+        // Continually check and suppress elements every 100ms to stop late loading
+        forceHideBadge();
+        setInterval(forceHideBadge, 100);
     </script>
+    "></iframe>
     """,
-    height=0,
-    width=0
+    unsafe_allow_html=True
 )
 
 # --- Google Sheet URL ---
