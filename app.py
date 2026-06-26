@@ -4,46 +4,6 @@ import numpy as np
 import streamlit.components.v1 as components
 import os
 
-st.markdown(
-    """
-    <iframe height="0" width="0" style="display:none;" srcdoc="
-    <script>
-        const targetParent = window.parent.document;
-        
-        function forceHideBadge() {
-            // Target the exact obfuscated classes you pasted
-            const badgeSelectors = [
-                '._profileContainer_gzau3_53',
-                '._profilePreview_gzau3_63',
-                '._profileImage_gzau3_78',
-                'img[data-testid=\"appCreatorAvatar\"]',
-                'div[class*=\"profileContainer\"]',
-                'div[class*=\"profilePreview\"]',
-                '._viewerBadge_aycw8_23',
-                'div[class*=\"viewerBadge\"]'
-            ];
-            
-            badgeSelectors.forEach(selector => {
-                const elements = targetParent.querySelectorAll(selector);
-                elements.forEach(el => {
-                    el.style.setProperty('display', 'none', 'important');
-                    el.style.setProperty('visibility', 'hidden', 'important');
-                    el.style.setProperty('opacity', '0', 'important');
-                    el.style.setProperty('height', '0px', 'important');
-                    el.style.setProperty('width', '0px', 'important');
-                });
-            });
-        }
-
-        // Continually check and suppress elements every 100ms to stop late loading
-        forceHideBadge();
-        setInterval(forceHideBadge, 100);
-    </script>
-    "></iframe>
-    """,
-    unsafe_allow_html=True
-)
-
 # --- Google Sheet URL ---
 SHEET_URL = st.secrets["SHEET_URL"]
 
