@@ -340,8 +340,10 @@ html_parts = [
 * { box-sizing: border-box; }
 html, body {
     width: 100%;
+    min-height: 100%;
     margin: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: transparent;
     color: var(--text);
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -602,25 +604,18 @@ for row in scores.itertuples(index=False):
 html_parts.append(
     """
 </div>
-<script>
-const sendHeight = () => {
-    const height = Math.ceil(document.documentElement.scrollHeight + 4);
-    window.parent.postMessage({
-        isStreamlitMessage: true,
-        type: "streamlit:setFrameHeight",
-        height: height
-    }, "*");
-};
-
-window.addEventListener("load", sendHeight);
-window.addEventListener("resize", sendHeight);
-new ResizeObserver(sendHeight).observe(document.getElementById("leaderboard"));
-setTimeout(sendHeight, 100);
-setTimeout(sendHeight, 500);
-</script>
 </body>
 </html>
 """
 )
 
-components.html("".join(html_parts), height=300, scrolling=False)
+# A fixed viewport with iframe scrolling is more reliable than attempting to
+# resize the component through Streamlit's private postMessage protocol.
+# The leaderboard remains responsive inside this viewport on desktop, tablet,
+# and mobile screens.
+leaderboard_height = min(max(720, len(scores) * 112), 1200)
+components.html(
+    "".join(html_parts),
+    height=leaderboard_height,
+    scrolling=True,
+)
