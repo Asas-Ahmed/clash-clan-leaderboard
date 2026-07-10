@@ -291,19 +291,6 @@ with action_col:
         st.cache_data.clear()
         st.rerun()
 
-st.markdown(
-    """
-    <div class="weight-strip">
-        <span class="weight-chip">🔥 Rush · 30%</span>
-        <span class="weight-chip">🛡️ CWL · 25%</span>
-        <span class="weight-chip">⚔️ War · 20%</span>
-        <span class="weight-chip">🏰 Capital · 15%</span>
-        <span class="weight-chip">🎮 Games · 10%</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 try:
     raw_data = load_player_data()
 except (RuntimeError, ValueError) as error:
