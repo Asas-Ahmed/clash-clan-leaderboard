@@ -19,6 +19,8 @@ WAR_WEIGHT = 0.20
 CAPITAL_WEIGHT = 0.15
 GAMES_WEIGHT = 0.10
 
+RUSH_EVENT_ENABLED = False
+
 WAR_STARS_PER_PARTICIPATION = 6
 CWL_STARS_PER_ATTACK = 3
 
@@ -234,12 +236,31 @@ def compute_scores(df: pd.DataFrame) -> pd.DataFrame:
     )
     df["Rush_Score"] = df["RushEvents_Participation_pct"] / 100
 
+    if RUSH_EVENT_ENABLED:
+        weights = {
+            "Rush": RUSH_WEIGHT,
+            "CWL": CWL_WEIGHT,
+            "War": WAR_WEIGHT,
+            "Capital": CAPITAL_WEIGHT,
+            "Games": GAMES_WEIGHT,
+        }
+    else:
+        total = CWL_WEIGHT + WAR_WEIGHT + CAPITAL_WEIGHT + GAMES_WEIGHT
+    
+        weights = {
+            "Rush": 0.0,
+            "CWL": CWL_WEIGHT / total,
+            "War": WAR_WEIGHT / total,
+            "Capital": CAPITAL_WEIGHT / total,
+            "Games": GAMES_WEIGHT / total,
+        }
+    
     df["FinalScore"] = (
-        df["Rush_Score"] * RUSH_WEIGHT
-        + df["CWL_Score"] * CWL_WEIGHT
-        + df["War_Score"] * WAR_WEIGHT
-        + df["Capital_Score"] * CAPITAL_WEIGHT
-        + df["Games_Score"] * GAMES_WEIGHT
+        df["Rush_Score"] * weights["Rush"]
+        + df["CWL_Score"] * weights["CWL"]
+        + df["War_Score"] * weights["War"]
+        + df["Capital_Score"] * weights["Capital"]
+        + df["Games_Score"] * weights["Games"]
     ) * 100
 
     df["War_Skill_Score"] = df["War_Score"] * 100
