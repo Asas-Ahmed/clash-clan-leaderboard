@@ -68,9 +68,9 @@ def compute_scores(df):
     df["Events_Scaled"] = df["RushEvents_Participation_pct"] / 100
 
     df["FinalScore"] = (
-        (df["War_CWL_Skill_Score"] / 100) * 0.31 +
+        (df["War_CWL_Skill_Score"] / 100) * 0.41 +
         df["Gold_Scaled"] * 0.05 +
-        df["Games_Scaled"] * 0.21 +
+        df["Games_Scaled"] * 0.11 +
         df["Events_Scaled"] * 0.43
     ) * 100
 
